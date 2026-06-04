@@ -1,21 +1,13 @@
 #!/usr/bin/env python3
 """
-CSV Product Text Translator
-============================
-Translates product copy in CSV files across DE/FR/IT/ES/NL languages.
-Features: case matching, multi-line preservation, unit standardization,
-number skipping, and extensible JSON-based translation dictionary.
+CSV Product Text Translator v2
+===============================
+Auto-detects columns by content. Translates across DE/FR/IT/ES/NL, optimizes
+English text. Features: case matching per locale, multi-line preservation,
+comprehensive unit standardization, number skipping.
 
 Usage:
     python translate.py <csv_path> [options]
-
-Options:
-    --source-col NAME    Source text column name (default: "Source Text")
-    --target-col NAME    Translation output column name (default: "Translated Text")
-    --locale-col NAME    Locale code column name (default: "Locale")
-    --in-place           Overwrite input file instead of creating a new one
-    --output PATH        Specify output file path explicitly
-    --dict PATH          Path to translations.json (auto-detected if omitted)
 """
 
 import csv
@@ -27,36 +19,163 @@ import argparse
 
 
 # ============================================================
+# Constants
+# ============================================================
+
+# Recognized locale codes (ISO 639-1 + some common variants)
+KNOWN_LOCALES = {
+    'DE', 'FR', 'IT', 'ES', 'NL', 'EN', 'PT', 'PL', 'RU', 'JA', 'ZH',
+    'KO', 'AR', 'TR', 'SV', 'DA', 'NO', 'FI', 'CS', 'HU', 'RO', 'BG',
+    'EL', 'HE', 'TH', 'VI', 'ID', 'MS', 'HI', 'BN', 'UK', 'SR', 'HR',
+    'SK', 'SL', 'LT', 'LV', 'ET', 'IS', 'MT', 'GA', 'CY', 'EU', 'CA',
+    'GL', 'SW', 'FA', 'HE', 'UR', 'TA', 'TE', 'MR', 'GU', 'KN', 'ML',
+    'PA', 'BN', 'SI', 'LO', 'KM', 'MY', 'AM', 'NE',
+    # Common regional variants
+    'EN-US', 'EN-GB', 'PT-BR', 'PT-PT', 'ZH-CN', 'ZH-TW',
+    'ES-MX', 'ES-ES', 'FR-CA', 'FR-FR', 'DE-DE', 'DE-AT', 'DE-CH',
+    'NL-NL', 'NL-BE', 'IT-IT', 'IT-CH',
+}
+
+# Unit standardization map (lowercase key -> correct SI form)
+# Pattern: number + optional-space + unit_alias -> number + space + correct_unit
+UNIT_STANDARD = {
+    # Length
+    'mm': 'mm', 'cm': 'cm', 'm': 'm', 'km': 'km',
+    'in': 'in', 'inch': 'in', 'inches': 'in',
+    'ft': 'ft', 'feet': 'ft', 'yd': 'yd', 'mi': 'mi',
+    # Weight
+    'mg': 'mg', 'g': 'g', 'kg': 'kg', 't': 't',
+    'oz': 'oz', 'lb': 'lb', 'lbs': 'lb',
+    # Volume
+    'ml': 'ml', 'cl': 'cl', 'l': 'L', 'gal': 'gal',
+    # Power
+    'w': 'W', 'kw': 'kW', 'mw': 'MW', 'hp': 'HP',
+    # Electricity
+    'v': 'V', 'kv': 'kV', 'a': 'A', 'ma': 'mA',
+    'ah': 'Ah', 'mah': 'mAh', 'wh': 'Wh', 'kwh': 'kWh',
+    # Frequency
+    'hz': 'Hz', 'khz': 'kHz', 'mhz': 'MHz', 'ghz': 'GHz',
+    # Pressure
+    'pa': 'Pa', 'hpa': 'hPa', 'kpa': 'kPa', 'mpa': 'MPa',
+    'bar': 'bar', 'psi': 'PSI',
+    # Force / Torque
+    'n': 'N', 'kn': 'kN', 'nm': 'Nm',
+    # Speed
+    'm/s': 'm/s', 'km/h': 'km/h', 'mph': 'mph',
+    # Time
+    's': 's', 'sec': 's', 'ms': 'ms',
+    'min': 'min', 'mins': 'min', 'h': 'h', 'hr': 'hr', 'hrs': 'hr',
+    # Temperature
+    'c': '°C', 'f': '°F',
+    # Other
+    '%': '%', 'db': 'dB', 'rpm': 'RPM',
+    # Angle
+    'deg': '°',
+}
+
+# English minor words that should be lowercase in title case
+# (prepositions, conjunctions, articles of 4 chars or fewer)
+EN_MINOR_WORDS = {
+    'a', 'an', 'the',
+    'and', 'but', 'or', 'nor', 'for', 'so', 'yet',
+    'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from',
+    'up', 'off', 'out', 'per', 'via', 'into', 'onto', 'upon',
+    'down', 'over', 'near', 'past',
+    'as', 'if', 'not', 'than', 'that', 'this', 'each', 'some',
+    'its', 'it',
+}
+
+# European locales (use comma as decimal separator: 3,3 kg)
+EU_LOCALES = {'DE', 'FR', 'IT', 'ES', 'NL', 'PT', 'PL', 'RU', 'SV', 'DA',
+              'NO', 'FI', 'CS', 'HU', 'RO', 'BG', 'EL', 'SK', 'SL', 'LT',
+              'LV', 'ET', 'HR', 'SR', 'UK'}
+
+
+# ============================================================
 # Helpers
 # ============================================================
 
 def normalize_text(text):
-    """Collapse all whitespace to single spaces, strip."""
     if text is None:
         return ""
     return re.sub(r'\s+', ' ', text).strip()
 
 
 def has_newlines(text):
-    """Check if text contains newline characters."""
     if text is None:
         return False
     return '\n' in text or '\r' in text
 
 
 def is_pure_number(text):
-    """Check if text is purely a number (integer, decimal, or comma-decimal)."""
     normalized = normalize_text(text)
     if not normalized:
         return False
     return bool(re.match(r'^[\d.,]+$', normalized))
 
 
+def is_mostly_ascii(text, threshold=0.9):
+    """Check if text is mostly ASCII (suggests English source)."""
+    if not text:
+        return False
+    ascii_count = sum(1 for c in text if ord(c) < 128)
+    return ascii_count / len(text) >= threshold
+
+
+# ============================================================
+# Unit standardization
+# ============================================================
+
+def _build_unit_pattern():
+    """Build regex pattern matching number+unit combinations."""
+    all_units = sorted(UNIT_STANDARD.keys(), key=len, reverse=True)
+    escaped = [re.escape(u) for u in all_units]
+    # Match: number (optional decimal) + optional space + unit
+    # Captures: (full_match, number, unit_raw)
+    pattern = r'(\d+(?:[.,]\d+)?)\s*(' + '|'.join(escaped) + r')(?![a-zA-Z])'
+    return re.compile(pattern, re.IGNORECASE)
+
+
+_UNIT_PATTERN = _build_unit_pattern()
+
+
+def standardize_units(text, locale=None):
+    """
+    Fix unit formatting in text.
+    - Separate number and unit with space
+    - Fix unit case to standard form
+    - EU locales: use comma as decimal separator
+    """
+    def replacer(m):
+        number = m.group(1)
+        unit_raw = m.group(2)
+        standard_unit = UNIT_STANDARD.get(unit_raw.lower(), unit_raw)
+
+        # Decimal separator
+        if locale and locale.upper() in EU_LOCALES:
+            number = number.replace('.', ',')
+
+        return f'{number} {standard_unit}'
+
+    return _UNIT_PATTERN.sub(replacer, text)
+
+
+# ============================================================
+# Case detection and application
+# ============================================================
+
+def _is_unit_word(w):
+    """Check if a word is a known unit abbreviation (should be ignored for case detection)."""
+    clean = w.strip('()[]{}"\',.;:!?')
+    # Strip leading digits (e.g. "3.3kg" -> "kg")
+    clean = re.sub(r'^[\d.,]+', '', clean)
+    return clean.lower() in UNIT_STANDARD if clean else False
+
+
 def get_case_type(text):
-    """
-    Determine case type: 'allcaps', 'title', or 'mixed'.
-    Handles multi-line text correctly.
-    """
+    """Determine case type: 'allcaps', 'title', or 'mixed'.
+    Unit abbreviations (kg, cm, etc.) are ignored for case detection
+    since they are always lowercase in standard form."""
     alpha_only = re.sub(r'[^a-zA-Z]', '', text)
     if not alpha_only:
         return 'mixed'
@@ -69,7 +188,10 @@ def get_case_type(text):
     if not words:
         return 'mixed'
 
-    alpha_words = [w for w in words if re.search(r'[a-zA-Z]', w)]
+    # Filter out number+unit words like "3.3kg" (units are naturally lowercase)
+    alpha_words = [w for w in words
+                   if re.search(r'[a-zA-Z]', w)
+                   and not re.match(r'^[\d.,]', w)]
     if not alpha_words:
         return 'mixed'
 
@@ -77,23 +199,182 @@ def get_case_type(text):
     return 'title' if all_title else 'mixed'
 
 
-def apply_case(translation, case_type):
-    """Apply case type to translation. Handles multi-line text line by line."""
+def apply_case(translation, case_type, locale=None):
+    """
+    Apply case type to translation, with per-locale title case rules.
+    - allcaps: always uppercase (all languages)
+    - title:
+        EN: English rules (minor words lowercase)
+        others: every word capitalized (product label convention)
+    - mixed: keep as-is
+    """
     if '\n' in translation:
         lines = translation.split('\n')
-        return '\n'.join(apply_case(line, case_type) for line in lines)
+        return '\n'.join(apply_case(line, case_type, locale) for line in lines)
 
     if case_type == 'allcaps':
         return translation.upper()
+
     elif case_type == 'title':
         words = translation.split()
         result = []
-        for w in words:
-            if w:
+        is_en = locale and locale.upper() == 'EN'
+
+        for i, w in enumerate(words):
+            if not w:
+                result.append(w)
+                continue
+
+            is_first = (i == 0)
+            is_last = (i == len(words) - 1)
+
+            if is_en:
+                # English title case: protect unit abbreviations, lowercase minor words
+                if _is_unit_word(w):
+                    result.append(w)
+                    continue
+                clean = w.strip('()[]{}"\',.;:!?')
+                if (not is_first and not is_last
+                        and clean.lower() in EN_MINOR_WORDS
+                        and len(clean) <= 4):
+                    result.append(w.lower())
+                else:
+                    result.append(w[0].upper() + w[1:] if len(w) > 1 else w.upper())
+            else:
+                # Non-EN product labels: every word capitalized (standard convention)
                 result.append(w[0].upper() + w[1:] if len(w) > 1 else w.upper())
+
         return ' '.join(result)
+
     else:
         return translation
+
+
+# ============================================================
+# EN text optimization
+# ============================================================
+
+def optimize_en_text(source_text):
+    """
+    Optimize English source text without translation.
+    1. Standardize units
+    2. Fix title case (lowercase minor words)
+    3. Re-standardize units (title-casing may have broken them)
+    """
+    text = standardize_units(source_text, locale='EN')
+    case_type = get_case_type(source_text)
+    text = apply_case(text, case_type, locale='EN')
+    if case_type == 'title':
+        text = standardize_units(text, locale='EN')
+    return text
+
+
+# ============================================================
+# Auto column detection
+# ============================================================
+
+def _sample_rows(rows, n=10):
+    """Get the first n data rows (skip header)."""
+    data = rows[1:] if len(rows) > 1 else []
+    return data[:min(n, len(data))]
+
+
+def detect_columns(rows):
+    """
+    Auto-detect column roles based on content patterns and header hints.
+    Returns (locale_col, source_col, target_col) indices.
+    """
+    header = rows[0] if rows else []
+    sample = _sample_rows(rows)
+    if not sample:
+        return None, None, None
+
+    num_cols = max(len(row) for row in sample) if sample else 0
+    if num_cols == 0:
+        return None, None, None
+
+    # Score each column
+    locale_score = [0] * num_cols
+    empty_score = [0] * num_cols
+    english_score = [0] * num_cols
+    number_score = [0] * num_cols
+    sample_count = [0] * num_cols
+
+    for row in sample:
+        for i in range(min(len(row), num_cols)):
+            val = row[i].strip() if i < len(row) else ''
+            sample_count[i] += 1
+
+            if not val:
+                empty_score[i] += 1
+                continue
+
+            # Locale check
+            if val.upper() in KNOWN_LOCALES:
+                locale_score[i] += 1
+
+            # Number check
+            if is_pure_number(val):
+                number_score[i] += 1
+
+            # English check
+            if is_mostly_ascii(val) and val.upper() not in KNOWN_LOCALES and not is_pure_number(val):
+                english_score[i] += 1
+
+    # Normalize to ratios
+    for i in range(num_cols):
+        n = max(sample_count[i], 1)
+        locale_score[i] /= n
+        empty_score[i] /= n
+        english_score[i] /= n
+        number_score[i] /= n
+
+    # Find locale column: highest locale score (must be > 0.5)
+    locale_col = max(range(num_cols), key=lambda i: locale_score[i])
+    if locale_score[locale_col] < 0.5:
+        locale_col = None
+
+    # Find target column: combine content (empty score) with header hints
+    TARGET_KEYWORDS = ['translat', 'target', '翻译', '译文', '结果']
+    candidates = [i for i in range(num_cols) if i != locale_col]
+    if candidates:
+        # Boost empty score with header hints
+        def target_score(i):
+            score = empty_score[i]
+            h = header[i].lower() if header and i < len(header) else ''
+            if any(kw in h for kw in TARGET_KEYWORDS):
+                score += 1.0  # Strong boost for matching header
+            return score
+
+        target_col = max(candidates, key=target_score)
+        if empty_score[target_col] < 0.3 and not any(
+            kw in (header[target_col].lower() if header and target_col < len(header) else '')
+            for kw in TARGET_KEYWORDS
+        ):
+            # Not clearly empty and no header hint — pick lowest content column
+            target_col = min(candidates, key=lambda i: english_score[i] + locale_score[i])
+    else:
+        target_col = None
+
+    # Find source column: highest english score, not locale or target
+    remaining = [i for i in range(num_cols) if i != locale_col and i != target_col]
+    if remaining:
+        source_col = max(remaining, key=lambda i: english_score[i])
+    else:
+        source_col = None
+
+    return locale_col, source_col, target_col
+
+
+def print_detected_columns(header, locale_col, source_col, target_col):
+    """Print auto-detected column mapping."""
+    names = []
+    for role, col in [('Locale', locale_col), ('Source', source_col), ('Target', target_col)]:
+        if col is not None and col < len(header):
+            names.append(f'{role}="{header[col]}"')
+        else:
+            names.append(f'{role}=?')
+    print(f"Columns: {', '.join(names)}")
 
 
 # ============================================================
@@ -118,6 +399,16 @@ class Translator:
                 locales.update(translations.keys())
         return sorted(locales)
 
+    def _apply_translation(self, base, source_text, locale_upper):
+        """Standardize units, apply case, then re-standardize for title case."""
+        base = standardize_units(base, locale_upper)
+        case_type = get_case_type(source_text)
+        result = apply_case(base, case_type, locale_upper)
+        # Re-standardize after title-casing (fixes "Ml" -> "ml", "Kg" -> "kg", etc.)
+        if case_type == 'title':
+            result = standardize_units(result, locale_upper)
+        return result
+
     def translate(self, source_text, locale):
         """
         Translate source_text to the given locale.
@@ -125,30 +416,33 @@ class Translator:
         """
         normalized = normalize_text(source_text)
 
-        # Numbers → leave empty
+        # Numbers -> leave empty
         if is_pure_number(normalized):
             return "", False
 
-        # Try multi-line translation first
+        locale_upper = locale.upper()
+
+        # EN: optimize text, don't translate
+        if locale_upper == 'EN':
+            return optimize_en_text(source_text), False
+
+        # Multi-line lookup first
         if has_newlines(source_text):
             clean_source = source_text.replace('\r\n', '\n').replace('\r', '\n')
-            base = self.multi.get(clean_source, {}).get(locale)
+            base = self.multi.get(clean_source, {}).get(locale_upper)
             if base is not None:
-                case_type = get_case_type(source_text)
-                return apply_case(base, case_type), False
+                return self._apply_translation(base, source_text, locale_upper), False
 
-        # Fall back to single-line translation
-        base = self.single.get(normalized, {}).get(locale)
+        # Single-line lookup
+        base = self.single.get(normalized, {}).get(locale_upper)
         if base is not None:
-            case_type = get_case_type(source_text)
-            return apply_case(base, case_type), False
+            return self._apply_translation(base, source_text, locale_upper), False
 
-        # Missing translation
-        self.untranslated.append((normalized, locale))
-        return f"[TODO:{locale}]", True
+        # Missing
+        self.untranslated.append((normalized, locale_upper))
+        return f"[TODO:{locale_upper}]", True
 
     def report(self):
-        """Return list of unique untranslated (source, locale) pairs."""
         seen = set()
         unique = []
         for src, loc in self.untranslated:
@@ -166,11 +460,9 @@ class Translator:
 def find_dict_path():
     """Auto-detect translations.json relative to this script."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    # Try references/ alongside scripts/
     path = os.path.join(os.path.dirname(script_dir), 'references', 'translations.json')
     if os.path.exists(path):
         return path
-    # Try relative to cwd
     path = os.path.join(os.getcwd(), 'references', 'translations.json')
     if os.path.exists(path):
         return path
@@ -182,29 +474,29 @@ def main():
         description='Translate CSV product text across European languages.'
     )
     parser.add_argument('csv_path', help='Path to input CSV file')
-    parser.add_argument('--source-col', default='Source Text',
-                        help='Source text column name (default: "Source Text")')
-    parser.add_argument('--target-col', default='Translated Text',
-                        help='Target translation column name (default: "Translated Text")')
-    parser.add_argument('--locale-col', default='Locale',
-                        help='Locale code column name (default: "Locale")')
+    parser.add_argument('--source-col', default=None,
+                        help='Source text column name (auto-detected if omitted)')
+    parser.add_argument('--target-col', default=None,
+                        help='Target translation column name (auto-detected if omitted)')
+    parser.add_argument('--locale-col', default=None,
+                        help='Locale code column name (auto-detected if omitted)')
     parser.add_argument('--in-place', action='store_true',
                         help='Overwrite the input file')
     parser.add_argument('--output', default=None,
-                        help='Output file path (overrides default naming)')
+                        help='Output file path')
     parser.add_argument('--dict', default=None,
                         help='Path to translations.json (auto-detected if omitted)')
 
     args = parser.parse_args()
 
-    # Find translation dictionary
+    # Find dictionary
     dict_path = args.dict or find_dict_path()
     if not dict_path or not os.path.exists(dict_path):
         print("ERROR: Cannot find translations.json.")
         print("  Specify with --dict or place it in references/translations.json")
         sys.exit(1)
 
-    print(f"Translation dictionary: {dict_path}")
+    print(f"Dictionary: {dict_path}")
 
     # Load translations
     translator = Translator(dict_path)
@@ -221,32 +513,40 @@ def main():
         rows = list(reader)
 
     if not rows:
-        print("ERROR: No rows found in CSV!")
+        print("ERROR: No rows found!")
         sys.exit(1)
 
     header = rows[0]
     print(f"Header: {header}")
     print(f"Data rows: {len(rows) - 1}")
 
-    # Find column indices by header name
-    try:
-        col_locale = header.index(args.locale_col)
-        col_source = header.index(args.source_col)
-        col_target = header.index(args.target_col)
-    except ValueError as e:
-        print(f"ERROR: Column not found in header: {e}")
-        print(f"  Available columns: {header}")
-        sys.exit(1)
+    # Determine column indices
+    if args.locale_col and args.source_col and args.target_col:
+        # Manual override
+        try:
+            col_locale = header.index(args.locale_col)
+            col_source = header.index(args.source_col)
+            col_target = header.index(args.target_col)
+        except ValueError as e:
+            print(f"ERROR: {e}")
+            sys.exit(1)
+        print(f"Columns (manual): Locale=\"{args.locale_col}\", "
+              f"Source=\"{args.source_col}\", Target=\"{args.target_col}\"")
+    else:
+        # Auto-detect
+        col_locale, col_source, col_target = detect_columns(rows)
+        if col_locale is None or col_source is None or col_target is None:
+            print("ERROR: Could not auto-detect columns. "
+                  "Use --locale-col, --source-col, --target-col to specify.")
+            sys.exit(1)
+        print_detected_columns(header, col_locale, col_source, col_target)
 
-    print(f"Columns: locale={header[col_locale]}, "
-          f"source={header[col_source]}, "
-          f"target={header[col_target]}")
-
-    # Process rows
+    # Process
     processed = 0
     multiline_count = 0
     missing_count = 0
     number_skipped = 0
+    en_optimized = 0
 
     for i in range(1, len(rows)):
         row = rows[i]
@@ -254,8 +554,7 @@ def main():
         if not row or all(cell.strip() == '' for cell in row):
             continue
 
-        # Ensure row has enough columns
-        while len(row) <= col_source:
+        while len(row) <= max(col_locale, col_source, col_target):
             row.append('')
 
         locale = row[col_locale].strip() if len(row) > col_locale else ''
@@ -270,7 +569,6 @@ def main():
             missing_count += 1
             row[col_target] = translation
         elif translation == "":
-            # Number or empty
             row[col_target] = ""
             if is_pure_number(normalize_text(source_text)):
                 number_skipped += 1
@@ -279,8 +577,10 @@ def main():
             processed += 1
             if has_newlines(source_text):
                 multiline_count += 1
+            if locale.upper() == 'EN':
+                en_optimized += 1
 
-    # Determine output path
+    # Output path
     if args.output:
         output_path = args.output
     elif args.in_place:
@@ -289,7 +589,6 @@ def main():
         base, ext = os.path.splitext(csv_path)
         output_path = f"{base}_translated{ext}"
 
-    # Write output
     with open(output_path, 'w', encoding='utf-8-sig', newline='') as f:
         writer = csv.writer(f, delimiter=',', lineterminator='\n')
         writer.writerows(rows)
@@ -298,22 +597,23 @@ def main():
     print(f"\n{'='*50}")
     print(f"SUMMARY")
     print(f"{'='*50}")
-    print(f"Total rows processed : {len(rows) - 1}")
-    print(f"Translations filled   : {processed} ({multiline_count} multi-line)")
-    print(f"Numbers skipped       : {number_skipped}")
-    print(f"Missing translations  : {missing_count}")
-    print(f"Output                : {output_path}")
+    print(f"Total rows     : {len(rows) - 1}")
+    print(f"Translated     : {processed} ({multiline_count} multi-line)")
+    if en_optimized:
+        print(f"EN optimized   : {en_optimized}")
+    print(f"Numbers skipped: {number_skipped}")
+    print(f"Missing        : {missing_count}")
+    print(f"Output         : {output_path}")
 
-    # Report untranslated
     untranslated = translator.report()
     if untranslated:
         print(f"\n{'='*50}")
-        print(f"UNTRANSLATED TEXTS ({len(untranslated)} unique)")
+        print(f"UNTRANSLATED ({len(untranslated)} unique)")
         print(f"{'='*50}")
         for src, loc in untranslated:
             print(f"  [{loc}] {src}")
-        print(f"\n  Add translations to references/translations.json")
-        print(f"  under 'single_line' or 'multi_line' as appropriate.")
+        print(f"\n  Add to references/translations.json under")
+        print(f"  'single_line' or 'multi_line' as appropriate.")
 
     print()
 
