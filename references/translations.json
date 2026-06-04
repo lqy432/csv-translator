@@ -1,0 +1,335 @@
+{
+  "single_line": {
+    "20CM BAR & CHAIN": {
+      "DE": "20 cm Schwert & Kette",
+      "FR": "Guide-chaîne & chaîne 20 cm",
+      "IT": "Barra & catena 20 cm",
+      "ES": "Barra & cadena 20 cm",
+      "NL": "20 cm zaagblad & ketting"
+    },
+    "POWERFUL DRIVE SYSTEM": {
+      "DE": "Leistungsstarkes Antriebssystem",
+      "FR": "Système d'entraînement puissant",
+      "IT": "Potente sistema di trasmissione",
+      "ES": "Potente sistema de transmisión",
+      "NL": "Krachtig aandrijfsysteem"
+    },
+    "AUTOMATIC CHAIN LUBRICATION": {
+      "DE": "Automatische Kettenschmierung",
+      "FR": "Lubrification automatique de la chaîne",
+      "IT": "Lubrificazione automatica della catena",
+      "ES": "Lubricación automática de la cadena",
+      "NL": "Automatische kettingsmering"
+    },
+    "LOW VIBRATION": {
+      "DE": "Vibrationsarm",
+      "FR": "Faibles vibrations",
+      "IT": "Basse vibrazioni",
+      "ES": "Baja vibración",
+      "NL": "Weinig trillingen"
+    },
+    "BALANCED WEIGHT": {
+      "DE": "Ausgewogenes Gewicht",
+      "FR": "Poids équilibré",
+      "IT": "Peso bilanciato",
+      "ES": "Peso equilibrado",
+      "NL": "Uitgebalanceerd gewicht"
+    },
+    "OVERSIZED SPONGE GRIP": {
+      "DE": "Übergroßer Schaumstoffgriff",
+      "FR": "Poignée éponge surdimensionnée",
+      "IT": "Impugnatura in spugna sovradimensionata",
+      "ES": "Agarre de esponja sobredimensionado",
+      "NL": "Extra grote sponsgreep"
+    },
+    "EASY-STARTING SYSTEM": {
+      "DE": "Einfaches Startsystem",
+      "FR": "Système de démarrage facile",
+      "IT": "Sistema di avviamento facile",
+      "ES": "Sistema de arranque fácil",
+      "NL": "Eenvoudig startsysteem"
+    },
+    "SIMPLE CHAIN TENSION CONTROL": {
+      "DE": "Einfache Kettenspannungskontrolle",
+      "FR": "Contrôle simple de la tension de chaîne",
+      "IT": "Semplice controllo della tensione della catena",
+      "ES": "Control simple de tensión de la cadena",
+      "NL": "Eenvoudige kettingspanningregeling"
+    },
+    "SAFETY LOCKOUT": {
+      "DE": "Sicherheitssperre",
+      "FR": "Verrouillage de sécurité",
+      "IT": "Blocco di sicurezza",
+      "ES": "Bloqueo de seguridad",
+      "NL": "Veiligheidsvergrendeling"
+    },
+    "20CM POLE SAW": {
+      "DE": "20 cm Stangensäge",
+      "FR": "Scie à perche 20 cm",
+      "IT": "Sega ad asta 20 cm",
+      "ES": "Sierra de pértiga 20 cm",
+      "NL": "20 cm stokzaag"
+    },
+    "BATTERY AND CHARGER SOLD SEPARATELY": {
+      "DE": "Akku und Ladegerät separat erhältlich",
+      "FR": "Batterie et chargeur vendus séparément",
+      "IT": "Batteria e caricabatterie venduti separatamente",
+      "ES": "Batería y cargador se venden por separado",
+      "NL": "Accu en lader apart verkrijgbaar"
+    },
+    "YEAR": {
+      "DE": "Jahr",
+      "FR": "An",
+      "IT": "Anno",
+      "ES": "Año",
+      "NL": "Jaar"
+    },
+    "TOOL": {
+      "DE": "Werkzeug",
+      "FR": "Outil",
+      "IT": "Attrezzo",
+      "ES": "Herramienta",
+      "NL": "Gereedschap"
+    },
+    "WARRANTY": {
+      "DE": "Garantie",
+      "FR": "Garantie",
+      "IT": "Garanzia",
+      "ES": "Garantía",
+      "NL": "Garantie"
+    },
+    "BAR & CHAIN": {
+      "DE": "Schwert & Kette",
+      "FR": "Guide-chaîne & chaîne",
+      "IT": "Barra & catena",
+      "ES": "Barra & cadena",
+      "NL": "Zaagblad & ketting"
+    },
+    "RECHARGE": {
+      "DE": "Aufladen",
+      "FR": "Recharger",
+      "IT": "Ricaricare",
+      "ES": "Recargar",
+      "NL": "Opladen"
+    },
+    "UP TO": {
+      "DE": "Bis zu",
+      "FR": "Jusqu'à",
+      "IT": "Fino a",
+      "ES": "Hasta",
+      "NL": "Tot"
+    },
+    "Instant Hassle-Free Starting": {
+      "DE": "Sofortiger problemloser Start",
+      "FR": "Démarrage instantané sans problème",
+      "IT": "Avviamento immediato e senza problemi",
+      "ES": "Arranque instantáneo sin complicaciones",
+      "NL": "Direct probleemloos starten"
+    },
+    "With 65w Charger (Not Included)": {
+      "DE": "Mit 65-W-Ladegerät (nicht im Lieferumfang)",
+      "FR": "Avec chargeur 65 W (non inclus)",
+      "IT": "Con caricabatterie da 65 W (non incluso)",
+      "ES": "Con cargador de 65 W (no incluido)",
+      "NL": "Met 65-W-lader (niet inbegrepen)"
+    },
+    "On a 10x10 cm Lumber With 3.0Ah Battery (Not Included)": {
+      "DE": "An 10x10 cm Bauholz mit 3,0-Ah-Akku (nicht im Lieferumfang)",
+      "FR": "Sur du bois de 10x10 cm avec batterie 3,0 Ah (non incluse)",
+      "IT": "Su legname 10x10 cm con batteria da 3,0 Ah (non inclusa)",
+      "ES": "En madera de 10x10 cm con batería de 3,0 Ah (no incluida)",
+      "NL": "Op 10x10 cm hout met 3,0-Ah-accu (niet inbegrepen)"
+    },
+    "CM": {
+      "DE": "cm",
+      "FR": "cm",
+      "IT": "cm",
+      "ES": "cm",
+      "NL": "cm"
+    },
+    "MIN": {
+      "DE": "Min.",
+      "FR": "min",
+      "IT": "min",
+      "ES": "min",
+      "NL": "min"
+    },
+    "CUTS": {
+      "DE": "Schnitte",
+      "FR": "Coupes",
+      "IT": "Tagli",
+      "ES": "Cortes",
+      "NL": "Zaagsneden"
+    },
+    "20% More Power & 35% More Runtime": {
+      "DE": "20 % mehr Leistung & 35 % mehr Laufzeit",
+      "FR": "20 % de puissance en plus & 35 % d'autonomie en plus",
+      "IT": "20 % di potenza in più & 35 % di autonomia in più",
+      "ES": "20 % más de potencia y 35 % más de autonomía",
+      "NL": "20 % meer vermogen en 35 % meer gebruiksduur"
+    },
+    "*Compared to 20V products": {
+      "DE": "*Im Vergleich zu 20-V-Produkten",
+      "FR": "*Par rapport aux produits 20 V",
+      "IT": "*Rispetto ai prodotti da 20 V",
+      "ES": "*En comparación con los productos de 20 V",
+      "NL": "*In vergelijking met 20 V-producten"
+    },
+    "With 20 m/s chain speed": {
+      "DE": "Mit 20 m/s Kettengeschwindigkeit",
+      "FR": "Avec une vitesse de chaîne de 20 m/s",
+      "IT": "Con velocità della catena di 20 m/s",
+      "ES": "Con velocidad de cadena de 20 m/s",
+      "NL": "Met 20 m/s kettingsnelheid"
+    },
+    "Ultra Powerful": {
+      "DE": "Extrem leistungsstark",
+      "FR": "Ultra puissant",
+      "IT": "Ultra potente",
+      "ES": "Ultra potente",
+      "NL": "Ultra krachtig"
+    },
+    "180ML Automatic Oiler": {
+      "DE": "180 ml automatischer Öler",
+      "FR": "Graisseur automatique 180 ml",
+      "IT": "Oliatore automatico da 180 ml",
+      "ES": "Engrasador automático de 180 ml",
+      "NL": "180 ml automatische oliepomp"
+    },
+    "Applies to bar & chain to ensure optimal use": {
+      "DE": "Für optimale Nutzung auf Schwert & Kette auftragen",
+      "FR": "S'applique au guide-chaîne et à la chaîne pour une utilisation optimale",
+      "IT": "Si applica a barra e catena per un uso ottimale",
+      "ES": "Se aplica a barra y cadena para un uso óptimo",
+      "NL": "Geldt voor zaagblad en ketting voor optimaal gebruik"
+    },
+    "With provided extension pole": {
+      "DE": "Mit mitgelieferter Verlängerungsstange",
+      "FR": "Avec perche d'extension fournie",
+      "IT": "Con asta di prolunga in dotazione",
+      "ES": "Con pértiga de extensión incluida",
+      "NL": "Met meegeleverde verlengstok"
+    },
+    "2.3M-2.9M of Reach": {
+      "DE": "2,3 m - 2,9 m Reichweite",
+      "FR": "2,3 m - 2,9 m de portée",
+      "IT": "2,3 m - 2,9 m di portata",
+      "ES": "2,3 m - 2,9 m de alcance",
+      "NL": "2,3 m - 2,9 m bereik"
+    },
+    "Low vibration & variable speed trigger": {
+      "DE": "Vibrationsarm & variabler Geschwindigkeitsabzug",
+      "FR": "Faibles vibrations et gâchette à vitesse variable",
+      "IT": "Basse vibrazioni e grilletto a velocità variabile",
+      "ES": "Baja vibración y gatillo de velocidad variable",
+      "NL": "Lage trillingen en variabele snelheidstrekker"
+    },
+    "Easy to Use": {
+      "DE": "Einfach zu bedienen",
+      "FR": "Facile à utiliser",
+      "IT": "Facile da usare",
+      "ES": "Fácil de usar",
+      "NL": "Eenvoudig in gebruik"
+    },
+    "Easy To Use": {
+      "DE": "Einfach zu bedienen",
+      "FR": "Facile à utiliser",
+      "IT": "Facile da usare",
+      "ES": "Fácil de usar",
+      "NL": "Eenvoudig in gebruik"
+    },
+    "Only weighs 3.3kg, easy to use, transport & store.": {
+      "DE": "Wiegt nur 3,3 kg, einfach zu bedienen, zu transportieren und zu lagern.",
+      "FR": "Pèse seulement 3,3 kg, facile à utiliser, transporter et ranger.",
+      "IT": "Pesa solo 3,3 kg, facile da usare, trasportare e riporre.",
+      "ES": "Pesa solo 3,3 kg, fácil de usar, transportar y almacenar.",
+      "NL": "Weegt slechts 3,3 kg, eenvoudig in gebruik, te vervoeren en op te bergen."
+    },
+    "Compact & Lightweight Design": {
+      "DE": "Kompaktes & leichtes Design",
+      "FR": "Design compact et léger",
+      "IT": "Design compatto e leggero",
+      "ES": "Diseño compacto y ligero",
+      "NL": "Compact en lichtgewicht ontwerp"
+    },
+    "No gas, no oil, no emissions": {
+      "DE": "Kein Benzin, kein Öl, keine Emissionen",
+      "FR": "Pas d'essence, pas d'huile, pas d'émissions",
+      "IT": "Niente benzina, niente olio, niente emissioni",
+      "ES": "Sin gasolina, sin aceite, sin emisiones",
+      "NL": "Geen benzine, geen olie, geen uitstoot"
+    },
+    "Guaranteed Start Every Time": {
+      "DE": "Garantierter Start jedes Mal",
+      "FR": "Démarrage garanti à chaque fois",
+      "IT": "Avviamento garantito ogni volta",
+      "ES": "Arranque garantizado siempre",
+      "NL": "Gegarandeerde start elke keer"
+    }
+  },
+  "multi_line": {
+    "AUTOMATIC CHAIN\nLUBRICATION": {
+      "DE": "Automatische\nKettenschmierung",
+      "FR": "Lubrification automatique\nde la chaîne",
+      "IT": "Lubrificazione automatica\ndella catena",
+      "ES": "Lubricación automática\nde la cadena",
+      "NL": "Automatische\nkettingsmering"
+    },
+    "Instant\nHassle-Free Starting": {
+      "DE": "Sofortiger\nproblemloser Start",
+      "FR": "Démarrage instantané\nsans problème",
+      "IT": "Avviamento immediato\ne senza problemi",
+      "ES": "Arranque instantáneo\nsin complicaciones",
+      "NL": "Direct\nprobleemloos starten"
+    },
+    "With 65w Charger\n (Not Included)": {
+      "DE": "Mit 65-W-Ladegerät\n(nicht im Lieferumfang)",
+      "FR": "Avec chargeur 65 W\n(non inclus)",
+      "IT": "Con caricabatterie da 65 W\n(non incluso)",
+      "ES": "Con cargador de 65 W\n(no incluido)",
+      "NL": "Met 65-W-lader\n(niet inbegrepen)"
+    },
+    "With 65w Charger\n(Not Included)": {
+      "DE": "Mit 65-W-Ladegerät\n(nicht im Lieferumfang)",
+      "FR": "Avec chargeur 65 W\n(non inclus)",
+      "IT": "Con caricabatterie da 65 W\n(non incluso)",
+      "ES": "Con cargador de 65 W\n(no incluido)",
+      "NL": "Met 65-W-lader\n(niet inbegrepen)"
+    },
+    "On a 10x10 cm Lumber\nWith 3.0Ah Battery\n(Not Included)": {
+      "DE": "An 10x10 cm Bauholz\nmit 3,0-Ah-Akku\n(nicht im Lieferumfang)",
+      "FR": "Sur du bois de 10x10 cm\navec batterie 3,0 Ah\n(non incluse)",
+      "IT": "Su legname 10x10 cm\ncon batteria da 3,0 Ah\n(non inclusa)",
+      "ES": "En madera de 10x10 cm\ncon batería de 3,0 Ah\n(no incluida)",
+      "NL": "Op 10x10 cm hout\nmet 3,0-Ah-accu\n(niet inbegrepen)"
+    },
+    "20% More Power &\n35% More Runtime\n": {
+      "DE": "20 % mehr Leistung &\n35 % mehr Laufzeit",
+      "FR": "20 % de puissance en plus &\n35 % d'autonomie en plus",
+      "IT": "20 % di potenza in più &\n35 % di autonomia in più",
+      "ES": "20 % más de potencia y\n35 % más de autonomía",
+      "NL": "20 % meer vermogen en\n35 % meer gebruiksduur"
+    },
+    "Only weighs 3.3kg, \neasy to use, transport & store.": {
+      "DE": "Wiegt nur 3,3 kg,\neinfach zu bedienen, zu transportieren und zu lagern.",
+      "FR": "Pèse seulement 3,3 kg,\nfacile à utiliser, transporter et ranger.",
+      "IT": "Pesa solo 3,3 kg,\nfacile da usare, trasportare e riporre.",
+      "ES": "Pesa solo 3,3 kg,\nfácil de usar, transportar y almacenar.",
+      "NL": "Weegt slechts 3,3 kg,\neenvoudig in gebruik, te vervoeren en op te bergen."
+    },
+    "Compact &\nLightweight Design": {
+      "DE": "Kompaktes &\nleichtes Design",
+      "FR": "Design compact\net léger",
+      "IT": "Design compatto\ne leggero",
+      "ES": "Diseño compacto\ny ligero",
+      "NL": "Compact en\nlichtgewicht ontwerp"
+    },
+    "Guaranteed Start\nEvery Time": {
+      "DE": "Garantierter Start\njedes Mal",
+      "FR": "Démarrage garanti\nà chaque fois",
+      "IT": "Avviamento garantito\nogni volta",
+      "ES": "Arranque garantizado\nsiempre",
+      "NL": "Gegarandeerde start\nelke keer"
+    }
+  }
+}
