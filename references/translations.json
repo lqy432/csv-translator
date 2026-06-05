@@ -265,6 +265,20 @@
       "IT": "Avviamento garantito ogni volta",
       "ES": "Arranque garantizado siempre",
       "NL": "Gegarandeerde start elke keer"
+    },
+    "QUICK START GUIDE": {
+      "DE": "Schnellstartanleitung",
+      "FR": "Guide de démarrage rapide",
+      "IT": "Guida rapida",
+      "ES": "Guía de inicio rápido",
+      "NL": "Snelstartgids"
+    },
+    "ERGNOMIC HANDLE": {
+      "DE": "Ergonomischer Griff",
+      "FR": "Poignée ergonomique",
+      "IT": "Impugnatura ergonomica",
+      "ES": "Agarre ergonómico",
+      "NL": "Ergonomische handgreep"
     }
   },
   "multi_line": {

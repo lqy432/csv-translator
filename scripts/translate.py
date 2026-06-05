@@ -439,17 +439,17 @@ class Translator:
             return self._apply_translation(base, source_text, locale_upper), False
 
         # Missing
-        self.untranslated.append((normalized, locale_upper))
+        self.untranslated.append((normalized, locale_upper, has_newlines(source_text)))
         return f"[TODO:{locale_upper}]", True
 
     def report(self):
         seen = set()
         unique = []
-        for src, loc in self.untranslated:
+        for src, loc, is_multiline in self.untranslated:
             key = (src, loc)
             if key not in seen:
                 seen.add(key)
-                unique.append(key)
+                unique.append((src, loc, is_multiline))
         return unique
 
 
@@ -486,6 +486,8 @@ def main():
                         help='Output file path')
     parser.add_argument('--dict', default=None,
                         help='Path to translations.json (auto-detected if omitted)')
+    parser.add_argument('--missing-json', default=None,
+                        help='Output untranslated entries as JSON to the given path')
 
     args = parser.parse_args()
 
@@ -610,10 +612,29 @@ def main():
         print(f"\n{'='*50}")
         print(f"UNTRANSLATED ({len(untranslated)} unique)")
         print(f"{'='*50}")
-        for src, loc in untranslated:
-            print(f"  [{loc}] {src}")
+        for src, loc, is_ml in untranslated:
+            tag = "ML" if is_ml else "SL"
+            print(f"  [{loc}] [{tag}] {src}")
         print(f"\n  Add to references/translations.json under")
         print(f"  'single_line' or 'multi_line' as appropriate.")
+
+        # JSON output
+        if args.missing_json:
+            sl_entries = []
+            ml_entries = []
+            for src, loc, is_ml in untranslated:
+                if is_ml:
+                    ml_entries.append({"source": src, "locale": loc})
+                else:
+                    sl_entries.append({"source": src, "locale": loc})
+            report = {}
+            if sl_entries:
+                report["single_line"] = sl_entries
+            if ml_entries:
+                report["multi_line"] = ml_entries
+            with open(args.missing_json, 'w', encoding='utf-8') as f:
+                json.dump(report, f, ensure_ascii=False, indent=2)
+            print(f"\n  Missing report written to: {args.missing_json}")
 
     print()
 
