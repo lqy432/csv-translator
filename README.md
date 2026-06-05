@@ -1,47 +1,74 @@
-# CSV 多语言翻译
+# csv-translator
 
-产品文案 CSV → DE/FR/IT/ES/NL 自动翻译。
+Product copy CSV translator for European languages. A Python CLI tool that
+reads a CSV, translates English source text to DE/FR/IT/ES/NL using a JSON
+dictionary, and writes back — with case matching, unit standardization,
+and multi-line preservation.
 
-## 安装
+## Features
 
-**前提：** 电脑需安装 [Python 3](https://www.python.org/downloads/) 和 [Git](https://git-scm.com/downloads)。
+- **Dictionary-based** — fast, offline, no API calls
+- **Auto-detect columns** — no fixed column names required
+- **Case matching** — ALL CAPS input → ALL CAPS output, Title Case → Title Case
+- **Unit standardization** — fixes `65w` → `65 W`, `3.3kg` → `3.3 kg` (~60 units)
+- **English optimization** — corrects title case for EN locale
+- **Multi-line handling** — line breaks preserved in output
+- **Zero dependencies** — Python standard library only
 
-```bash
-# 克隆到 Claude Code 技能目录
-git clone https://github.com/lqy432/csv-translator.git ~/.claude/skills/csv-translator
-```
-
-克隆后重启 Claude Code 即可生效。
-
-## 使用
-
-在 Claude Code 中输入：
-
-```
-/csv-translator "文件路径.csv" --in-place
-```
-
-| 参数 | 说明 |
-|------|------|
-| `--in-place` | 直接覆盖原文件，不加则生成 `xxx_translated.csv` |
-| `--output 路径` | 指定输出文件位置 |
-
-也可以在终端直接运行：
+## Install
 
 ```bash
-python ~/.claude/skills/csv-translator/scripts/translate.py "文件.csv" --in-place
+git clone https://github.com/lqy432/csv-translator.git
 ```
 
-### CSV 格式要求
-
-| 列 | 内容 | 示例 |
-|----|------|------|
-| Locale | 语言代码 | DE / FR / IT / ES / NL |
-| Source Text | 原文 | POWERFUL DRIVE SYSTEM |
-| Translated Text | 译文（自动填入） | 留空即可 |
-
-## 更新
+## Usage
 
 ```bash
-cd ~/.claude/skills/csv-translator && git pull
+python translate.py input.csv --in-place
+```
+
+| Option | Description |
+|--------|-------------|
+| `--in-place` | Overwrite input file (default: creates `xxx_translated.csv`) |
+| `--source-col` | Source text column name (auto-detected if omitted) |
+| `--target-col` | Output column name (auto-detected if omitted) |
+| `--locale-col` | Locale column name (auto-detected if omitted) |
+| `--output PATH` | Explicit output file path |
+
+## Supported Locales
+
+`DE` (German) · `FR` (French) · `IT` (Italian) · `ES` (Spanish) · `NL` (Dutch)
+
+EN locale runs text optimization instead of translation.
+
+## How It Works
+
+```
+CSV input → Auto-detect columns → Look up dictionary → Apply case → Fix units → Output
+                                        ↓ (not found)
+                                  Mark as [TODO:XX]
+```
+
+## Dictionary
+
+Translations live in `references/translations.json`. New entries are picked up
+automatically — no code changes needed.
+
+```json
+{
+  "single_line": {
+    "SOURCE TEXT": {
+      "DE": "German",
+      "FR": "French"
+    }
+  }
+}
+```
+
+## Claude Code Skill
+
+Also available as a Claude Code skill:
+
+```
+/csv-translator "file.csv" --in-place
 ```
