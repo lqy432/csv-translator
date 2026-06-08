@@ -265,6 +265,55 @@
       "IT": "Avviamento garantito ogni volta",
       "ES": "Arranque garantizado siempre",
       "NL": "Gegarandeerde start elke keer"
+    },
+    "WITH 3.0AH BATTERY AND 65W CHARGER": {
+      "DE": "Mit 3,0-Ah-Akku und 65-W-Ladegerät",
+      "FR": "Avec batterie 3,0 Ah et chargeur 65 W",
+      "IT": "Con batteria da 3,0 Ah e caricabatterie da 65 W",
+      "ES": "Con batería de 3,0 Ah y cargador de 65 W",
+      "NL": "Met 3,0-Ah-accu en 65-W-lader"
+    },
+    "BATTERY": {
+      "DE": "Akku",
+      "FR": "Batterie",
+      "IT": "Batteria",
+      "ES": "Batería",
+      "NL": "Accu"
+    },
+    "With 65w Charger": {
+      "DE": "Mit 65-W-Ladegerät",
+      "FR": "Avec chargeur 65 W",
+      "IT": "Con caricabatterie da 65 W",
+      "ES": "Con cargador de 65 W",
+      "NL": "Met 65-W-lader"
+    },
+    "3.0 AH BATTERY": {
+      "DE": "3,0-Ah-Akku",
+      "FR": "Batterie 3,0 Ah",
+      "IT": "Batteria da 3,0 Ah",
+      "ES": "Batería de 3,0 Ah",
+      "NL": "3,0-Ah-accu"
+    },
+    "and Charger Included": {
+      "DE": "und Ladegerät im Lieferumfang",
+      "FR": "et chargeur inclus",
+      "IT": "e caricabatterie incluso",
+      "ES": "y cargador incluido",
+      "NL": "en lader inbegrepen"
+    },
+    "QUICK START GUIDE": {
+      "DE": "Schnellstartanleitung",
+      "FR": "Guide de démarrage rapide",
+      "IT": "Guida rapida",
+      "ES": "Guía de inicio rápido",
+      "NL": "Snelstartgids"
+    },
+    "ERGNOMIC HANDLE": {
+      "DE": "Ergonomischer Griff",
+      "FR": "Poignée ergonomique",
+      "IT": "Impugnatura ergonomica",
+      "ES": "Agarre ergonómico",
+      "NL": "Ergonomische handgreep"
     }
   },
   "multi_line": {
@@ -302,6 +351,13 @@
       "IT": "Su legname 10x10 cm\ncon batteria da 3,0 Ah\n(non inclusa)",
       "ES": "En madera de 10x10 cm\ncon batería de 3,0 Ah\n(no incluida)",
       "NL": "Op 10x10 cm hout\nmet 3,0-Ah-accu\n(niet inbegrepen)"
+    },
+    "On a 10x10 cm Lumber\nWith 3.0Ah Battery": {
+      "DE": "An 10x10 cm Bauholz\nmit 3,0-Ah-Akku",
+      "FR": "Sur du bois de 10x10 cm\navec batterie 3,0 Ah",
+      "IT": "Su legname 10x10 cm\ncon batteria da 3,0 Ah",
+      "ES": "En madera de 10x10 cm\ncon batería de 3,0 Ah",
+      "NL": "Op 10x10 cm hout\nmet 3,0-Ah-accu"
     },
     "20% More Power &\n35% More Runtime\n": {
       "DE": "20 % mehr Leistung &\n35 % mehr Laufzeit",
