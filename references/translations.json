@@ -79,9 +79,9 @@
     },
     "YEAR": {
       "DE": "Jahr",
-      "FR": "An",
-      "IT": "Anno",
-      "ES": "Año",
+      "FR": "Ans",
+      "IT": "Anni",
+      "ES": "Años",
       "NL": "Jaar"
     },
     "TOOL": {
