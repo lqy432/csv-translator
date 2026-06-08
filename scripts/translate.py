@@ -90,6 +90,16 @@ EU_LOCALES = {'DE', 'FR', 'IT', 'ES', 'NL', 'PT', 'PL', 'RU', 'SV', 'DA',
               'NO', 'FI', 'CS', 'HU', 'RO', 'BG', 'EL', 'SK', 'SL', 'LT',
               'LV', 'ET', 'HR', 'SR', 'UK'}
 
+# Locale-specific character sets — if source text contains these, it's likely
+# already translated into that locale (used for skip-already-translated check).
+LOCALE_SIGNATURE_CHARS = {
+    'DE': set('äöüßÄÖÜ'),
+    'FR': set('éèêëàâîïôûùçÉÈÊËÀÂÎÏÔÛÙÇ'),
+    'IT': set('àèéìòùÀÈÉÌÒÙ'),
+    'ES': set('áéíóúüñÁÉÍÓÚÜÑ¿¡'),
+    'NL': set('éèëïêÉÈËÏÊ'),
+}
+
 
 # ============================================================
 # Helpers
@@ -281,10 +291,38 @@ def _sample_rows(rows, n=10):
 
 def detect_columns(rows):
     """
-    Auto-detect column roles based on content patterns and header hints.
+    Auto-detect column roles.
+    Primary: match header names against keyword sets.
+    Fallback: content-based heuristics.
     Returns (locale_col, source_col, target_col) indices.
     """
     header = rows[0] if rows else []
+    if not header:
+        return None, None, None
+
+    # === Primary: header name matching ===
+    LOCALE_KEYWORDS = ['locale', 'language', 'lang', '语种', '语言']
+    SOURCE_KEYWORDS = ['source text', 'source', '原文', '源文本', '源文字']
+    TARGET_KEYWORDS = ['translat', 'target', '译文', '翻译', '译文输出', '结果']
+
+    def _matches(h, keywords):
+        lower = h.strip().lower()
+        return any(kw in lower for kw in keywords)
+
+    locale_col = source_col = target_col = None
+
+    for i, h in enumerate(header):
+        if locale_col is None and _matches(h, LOCALE_KEYWORDS):
+            locale_col = i
+        elif source_col is None and _matches(h, SOURCE_KEYWORDS):
+            source_col = i
+        elif target_col is None and _matches(h, TARGET_KEYWORDS):
+            target_col = i
+
+    if locale_col is not None and source_col is not None and target_col is not None:
+        return locale_col, source_col, target_col
+
+    # === Fallback: content-based detection ===
     sample = _sample_rows(rows)
     if not sample:
         return None, None, None
@@ -335,23 +373,21 @@ def detect_columns(rows):
         locale_col = None
 
     # Find target column: combine content (empty score) with header hints
-    TARGET_KEYWORDS = ['translat', 'target', '翻译', '译文', '结果']
+    TARGET_KEYWORDS_FALLBACK = ['translat', 'target', '翻译', '译文', '结果']
     candidates = [i for i in range(num_cols) if i != locale_col]
     if candidates:
-        # Boost empty score with header hints
         def target_score(i):
             score = empty_score[i]
             h = header[i].lower() if header and i < len(header) else ''
-            if any(kw in h for kw in TARGET_KEYWORDS):
-                score += 1.0  # Strong boost for matching header
+            if any(kw in h for kw in TARGET_KEYWORDS_FALLBACK):
+                score += 1.0
             return score
 
         target_col = max(candidates, key=target_score)
         if empty_score[target_col] < 0.3 and not any(
             kw in (header[target_col].lower() if header and target_col < len(header) else '')
-            for kw in TARGET_KEYWORDS
+            for kw in TARGET_KEYWORDS_FALLBACK
         ):
-            # Not clearly empty and no header hint — pick lowest content column
             target_col = min(candidates, key=lambda i: english_score[i] + locale_score[i])
     else:
         target_col = None
@@ -391,6 +427,9 @@ class Translator:
         self.multi = data.get('multi_line', {})
         self.supported_locales = self._detect_locales(data)
         self.untranslated = []
+        self.already_count = 0
+        # Reverse index: locale -> set of known translation strings (lowercased)
+        self._reverse_index = self._build_reverse_index(data)
 
     def _detect_locales(self, data):
         locales = set()
@@ -398,6 +437,41 @@ class Translator:
             for source, translations in section.items():
                 locales.update(translations.keys())
         return sorted(locales)
+
+    def _build_reverse_index(self, data):
+        """Build reverse index: for each locale, collect all known translations.
+        Used to detect if source text is already a translation (skip, don't re-translate)."""
+        index = {}
+        for section in [data.get('single_line', {}), data.get('multi_line', {})]:
+            for source, translations in section.items():
+                for loc, text in translations.items():
+                    if loc not in index:
+                        index[loc] = set()
+                    # Store normalized form for fuzzy matching
+                    index[loc].add(normalize_text(text).lower())
+        return index
+
+    def is_already_translated(self, source_text, locale):
+        """
+        Check if source_text appears to already be in the target locale.
+        Uses two signals:
+        1. Reverse dictionary lookup — source matches a known translation
+        2. Character signature — source contains locale-specific characters
+        """
+        locale_upper = locale.upper()
+
+        # Signal 1: reverse dictionary match
+        normalized_lower = normalize_text(source_text).lower()
+        known = self._reverse_index.get(locale_upper, set())
+        if normalized_lower in known:
+            return True
+
+        # Signal 2: locale-specific character signature
+        sig_chars = LOCALE_SIGNATURE_CHARS.get(locale_upper, set())
+        if sig_chars and any(c in source_text for c in sig_chars):
+            return True
+
+        return False
 
     def _apply_translation(self, base, source_text, locale_upper):
         """Standardize units, apply case, then re-standardize for title case."""
@@ -425,6 +499,11 @@ class Translator:
         # EN/UK: optimize text, don't translate
         if locale_upper in ('EN', 'UK'):
             return optimize_en_text(source_text), False
+
+        # Already translated? Source text is already in target locale -> skip
+        if self.is_already_translated(source_text, locale):
+            self.already_count += 1
+            return source_text, False
 
         # Multi-line lookup first
         if has_newlines(source_text):
@@ -599,13 +678,15 @@ def main():
     print(f"\n{'='*50}")
     print(f"SUMMARY")
     print(f"{'='*50}")
-    print(f"Total rows     : {len(rows) - 1}")
-    print(f"Translated     : {processed} ({multiline_count} multi-line)")
+    print(f"Total rows        : {len(rows) - 1}")
+    print(f"Translated        : {processed} ({multiline_count} multi-line)")
+    if translator.already_count:
+        print(f"Already translated: {translator.already_count}")
     if en_optimized:
-        print(f"EN optimized   : {en_optimized}")
-    print(f"Numbers skipped: {number_skipped}")
-    print(f"Missing        : {missing_count}")
-    print(f"Output         : {output_path}")
+        print(f"EN optimized      : {en_optimized}")
+    print(f"Numbers skipped   : {number_skipped}")
+    print(f"Missing           : {missing_count}")
+    print(f"Output            : {output_path}")
 
     untranslated = translator.report()
     if untranslated:

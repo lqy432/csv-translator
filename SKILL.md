@@ -15,7 +15,18 @@ argument-hint: <csv_file_path> [--in-place]
 /csv-translator <csv_file_path> --in-place
 ```
 
-脚本自动识别 CSV 中哪列是原文、哪列是语种代码、哪列是译文输出，**不需要固定列名**。
+### 列识别策略（v3）
+
+**优先**：匹配第一行表头关键词（不区分大小写）：
+- Locale 列：含 `locale` `language` `lang` `语种` `语言`
+- Source Text 列：含 `source text` `source` `原文` `源文本`
+- Translated Text 列：含 `translat` `target` `译文` `翻译` `结果`
+
+**回退**：若表头匹配失败，使用内容分析自动推断。
+
+### 跳过已翻译文本
+
+翻译前检测 Source Text 是否已经是目标语种的译文（反向词典匹配 + 语种特征字符），如果是则直接跳过，避免重复翻译。适用于已翻译定稿被错误导出到 Source Text 列的场景。
 
 可选参数（透传给 translate.py）：
 - `--source-col NAME`：手动指定原文列名
