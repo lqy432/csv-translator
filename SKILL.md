@@ -26,6 +26,54 @@ argument-hint: <csv_file_path> [--in-place]
 
 ## 执行流程（必须严格按顺序执行）
 
+### Step 0: 检查 Skill 更新（每次执行必做）
+
+在与 GitHub 通信之前，先检查是否有可用的 `gh` CLI 以及是否已认证。
+
+```bash
+gh auth status 2>&1 && echo "GH_AUTH_OK" || echo "GH_NOT_AUTH"
+```
+
+若 `gh` 不可用或未认证，打印提示并跳转到 Step 1：
+
+```
+⚠ GitHub CLI 未安装或未认证，跳过 skill 更新检查。
+  安装并认证 gh: https://cli.github.com
+```
+
+若 `gh` 已认证，继续检查更新：
+
+```bash
+cd <skill_dir>
+# 保存当前工作区状态
+git stash --include-untracked -m "auto-stash before skill update check"
+# 获取远程最新
+git fetch origin
+```
+
+然后对比本地与远程：
+
+```bash
+git rev-list --count HEAD..origin/main
+```
+
+- **结果为 0**：已是最新，执行 `git stash pop`（如有 stash），继续 Step 1。
+- **结果 > 0**：有更新，拉取最新：
+  ```bash
+  git pull --rebase origin main
+  ```
+  - 若 pull 成功，执行 `git stash pop`（如有 stash），**打印更新摘要**（最近的 commit message），然后**重新读取 `<skill_dir>/SKILL.md`**，从新的 Step 0 开始重新执行（因为 skill 文件本身可能已变更）。
+  - 若 pull 有冲突：
+    ```bash
+    git rebase --abort
+    git stash pop
+    ```
+    打印 `⚠ Skill 更新出现冲突，请手动解决后重试`，终止执行。
+
+**Git 错误处理（Step 0 内部）**：
+- 若 `git fetch` 失败（网络问题等），`git stash pop` 恢复工作区，打印提示后继续 Step 1（不阻塞翻译流程）。
+- **绝不执行** `git push --force` 或任何 force 操作。
+
 ### Step 1: 运行词典翻译
 
 ```bash
